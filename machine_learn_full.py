@@ -1,5 +1,5 @@
 # Machine Learning - Using McIntosh Evolutions of Sunspot Groups to Predict Flares in Solar Cycle 23 using Solar Cycle 22
-
+#%%
 # Load libraries
 from __future__ import print_function
 import pandas as pd
@@ -34,7 +34,7 @@ from sklearn.feature_selection import RFE
 from sklearn.feature_selection import RFECV
 import ss_custom
 
-
+#%%
 # Allowed McIntosh class integer values
 
 allowed_mci =  ['000',\
@@ -80,11 +80,13 @@ onehot_tr_mcevol = onehot_encoder.fit_transform(df_train['mcint_evol_enc'].value
 
 df_train_dummies = pd.get_dummies(df_train[df_train.columns[7:13]])
 
+#%%
 # Load test set (Cycle 23)
 filename_test = "mcint_ml23.csv"
 df_test = pd.read_csv(filename_test, names=names, \
                       dtype={'mcint':str, 'mcint_evol':str,\
                              'class':np.float64})
+
 
 # Encoding categorical variables                              
 df_test['mcint_enc']=le.fit_transform(df_test['mcint'])
@@ -107,7 +109,7 @@ print(df_train.groupby('class').size())
 # Split-out validation df values
 array_train = df_train.values
 array_test = df_test.values
-
+#%%
 method_test = input("Which method would you like to use? ")
 #method_test='sep_zpc'
 
@@ -172,9 +174,10 @@ models.append(('LDA', LinearDiscriminantAnalysis()))
 models.append(('KNN', KNeighborsClassifier()))
 models.append(('CART', DecisionTreeClassifier()))
 models.append(('RFC', RandomForestClassifier()))
+models.append(('SVM', SVC(probability=True)))
 
 # Evaluate each model in turn
-colors = ['pink', 'lightblue', 'lightgreen', 'peachpuff','mediumpurple']
+colors = ['pink', 'lightblue', 'lightgreen', 'peachpuff','mediumpurple','blanchedalmond']
 results = []
 names = []
 tss_full=[]
@@ -203,7 +206,6 @@ for name, model in models:
    # Keeps class balance in each train/test fold
 
     
-    
     # Calculate BSS and TSS values
     probs = model.fit(x_train,y_train).predict_proba(x_test)
     predicted=  model.fit(x_train,y_train).predict(x_test)
@@ -224,7 +226,7 @@ for name, model in models:
     plot_calibration_curve(model, name, 1,
                        x_train, y_train,
                        x_test, y_test,method_test,colors[i])
-    plt.savefig(name+'_reliability_diagram_22_23_'+method_test+'.eps')
+    plt.savefig('plots/'+name+'_reliability_diagram_22_23_'+method_test+'.png')
     fpr_full.append(fpr)
     tpr_full.append(tpr)
     thresholds_full.append(thresholds)
@@ -261,7 +263,7 @@ labels = [labels[1],labels[2],labels[5],labels[4],labels[3]]
 
 ax1.legend(handles,labels)
 #ax1.legend(loc="lower right")
-fig1.savefig('ROC_curves_'+method_test+'_22_23.eps')
+fig1.savefig('ROC_curves_'+method_test+'_22_23.png')
 
    # fig1.show()
     
@@ -280,7 +282,7 @@ plt.boxplot(results)
 ax.set_xticklabels(names)
 ax.set_ylabel(scoring)
 plt.figtext(0.15,0.9,'Top Algorithm = '+best_algorithm)
-fig.savefig('algorithm_comp_'+scoring+'_'+method_test+'_'+cycle_test+'_'+enc_str+'.eps',dpi=300)
+fig.savefig('algorithm_comp_'+scoring+'_'+method_test+'_'+cycle_test+'_'+enc_str+'.png',dpi=300)
 """
 
 
@@ -300,7 +302,7 @@ ax_bss.set_xlim(0.5,5.5)
 ax_bss.set_ylim([0.0, .4])
 ax_bss.legend()
 plt.figtext(0.15,0.9,'Top Algorithm = '+best_algorithm_bss)
-fig_bss.savefig('algorithm_comp_bss_'+method_test+'_22_23.eps')
+fig_bss.savefig('plots/algorithm_comp_bss_'+method_test+'_22_23.png')
 
 # Plot box plots of each algorithm of TSS values
 
@@ -318,7 +320,7 @@ ax_tss.set_ylim([0.3, .8])
 ax_tss.set_xlim(0.5,5.5)
 ax_tss.legend()
 plt.figtext(0.15,0.9,'Top Algorithm = '+best_algorithm_tss)
-fig_tss.savefig('algorithm_comp_tss_'+method_test+'_22_23.eps')
+fig_tss.savefig('plots/algorithm_comp_tss_'+method_test+'_22_23.png')
 #plt.show()
 
 tss_arr = list(zip(names,tss_full))
@@ -393,8 +395,10 @@ ax_imp[2,1].text(0.05,0.85,'(g) CART',transform=ax_imp[2,1].transAxes)
 ax_imp[3,1].text(0.05,0.85,'(h) RFC',transform=ax_imp[3,1].transAxes)
 
 fig_imp.suptitle('Feature Importance')
-fig_imp.savefig('feat_importances_'+method_test+'_22_23.eps')
+fig_imp.savefig('plots/feat_importances_'+method_test+'_22_23.png')
 
     
 plt.show()
 plt.close()
+
+# %%
